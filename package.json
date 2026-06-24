@@ -1,6 +1,14 @@
 {
   "name": "@chaaanito/event-resource-calendar",
-  "version": "1.0.0",
+  "version": "1.0.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chaaanito/event-resource-calendar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chaaanito/event-resource-calendar/issues"
+  },
+  "homepage": "https://github.com/chaaanito/event-resource-calendar#readme",
   "type": "module",
   "main": "src/index.js",
   "exports": {
