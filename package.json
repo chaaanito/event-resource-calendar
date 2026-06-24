@@ -20,12 +20,5 @@
       "default": "./src/index.js"
     },
     "./style.css": "./src/styles.css"
-  },
-  "scripts": {
-    "build:types": "tsc -p jsconfig.json",
-    "prepublishOnly": "npm run build:types"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0"
   }
 }
