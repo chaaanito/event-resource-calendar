@@ -2,34 +2,47 @@
 
 A lightweight, high-performance vanilla JavaScript resource calendar library. Features O(1) internal event mapping, extensible rich HTML layout renderers, holiday detection, and scroll freezing.
 
-## Installation
+# Installation
 
-\`\`\`bash
+```bash
 npm install event-resource-calendar
-\`\`\`
+```
 
-## Quick Start
+# Quick Start
 
-\`\`\`javascript
-import EventResource from 'event-resource-calendar';
+```javascript
+import EventResource from "event-resource-calendar";
 
 const calendar = new EventResource({
-container: '#calendar-root',
-defaultView: 'daily',
-defaultDate: '2026-06-24',
-showControls: true,
-stickyHeaders: true,
-rooms: [{ id: 'r1', name: 'Studio A', capacity: 10 }],
-timeSlots: [{ id: 't1', label: '09:00 AM' }],
-initialEvents: [{
-id: 'evt-1',
-roomId: 'r1',
-timeId: 't1',
-title: 'Morning Sync',
-color: '#10b981'
-}]
+  container: "#calendar-root",
+  defaultView: "daily",
+  defaultDate: "2026-06-24",
+  showControls: true,
+  stickyHeaders: true,
+  rooms: [
+    {
+      id: "r1",
+      name: "Studio A",
+      capacity: 10,
+    },
+  ],
+  timeSlots: [
+    {
+      id: "t1",
+      label: "09:00 AM",
+    },
+  ],
+  initialEvents: [
+    {
+      id: "evt-1",
+      roomId: "r1",
+      timeId: "t1",
+      title: "Morning Sync",
+      color: "#10b981",
+    },
+  ],
 });
-\`\`\`
+```
 
 ## Configuration Options
 
