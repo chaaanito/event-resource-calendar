@@ -7,7 +7,69 @@
  * @typedef {import('./event-resource.types.js').CustomButton} CustomButton
  */
 
+/**
+ * EventResource
+ * A lightweight, high-performance vanilla JavaScript resource calendar library.
+ * Features O(1) internal event mapping, extensible rich HTML layout renderers, holiday detection, and scroll freezing.
+ */
 export default class EventResource {
+  /**
+   * Initializes a new EventResource calendar instance, mounts it to the DOM, and fires initial render passes.
+   * @param {EventResourceOptions} options - Configuration parameters required to bootstrap the calendar matrix.
+   * @throws {Error} Throws if a valid `container` element, Node, or string selector cannot be resolved in the DOM.
+   * @example
+   * const calendar = new EventResource({
+   * // 1. Core Mount & State
+   * container: '#calendar-root',
+   * defaultView: 'daily',
+   * defaultDate: '2026-06-24', // Accepts string, number (epoch), or Date object
+   * * // 2. Structural UI Toggles
+   * showControls: true,
+   * stickyHeaders: true,
+   * * // 3. Grid Definitions (Static Fallbacks)
+   * rooms: [{ id: 'r1', name: 'Studio A', capacity: 10 }],
+   * timeSlots: [{ id: 't1', label: '09:00 AM' }],
+   * holidays: [{ date: '2026-12-25', name: 'Christmas Day' }],
+   * * // 4. Initial In-Memory Data
+   * initialEvents: [{
+   * id: 'evt-1',
+   * roomId: 'r1',
+   * timeId: 't1',
+   * title: 'Morning Sync',
+   * color: '#10b981'
+   * }],
+   * * // 5. Toolbar Extensions
+   * customButtons: [{
+   * label: 'Export PDF',
+   * className: 'bg-red-500 text-white',
+   * onClick: (e) => console.log('Exporting...', e)
+   * }],
+   * * // 6. Interaction Event Hooks
+   * onCellClick: (payload) => console.log('Empty slot clicked!'),
+   * onEventClick: (payload) => alert(`Clicked: ${payload.event.title}`),
+   * * // 7. Rich HTML Generation Intercepts
+   * renderRoomHeader: (room) => `<div>${room.name}</div>`,
+   * renderTimeSlotHeader: (slot) => `<div>${slot.label}</div>`,
+   * renderEvent: (event) => `<div>${event.title}</div>`,
+   * * // 8. Async Lifecycle Management (Draws skeleton first, then populates data)
+   * fetchRooms: async (date, view) => {
+   * const res = await fetch(`/api/rooms?date=${date.toISOString()}&view=${view}`);
+   * return await res.json();
+   * },
+   * fetchTimeSlots: async (date, view) => {
+   * const res = await fetch(`/api/timeslots?view=${view}`);
+   * return await res.json();
+   * },
+   * fetchHolidays: async (date, view) => {
+   * const res = await fetch(`/api/holidays?year=${date.getFullYear()}`);
+   * return await res.json();
+   * },
+   * fetchEvents: async (date, view) => {
+   * const res = await fetch(`/api/events?date=${date.toISOString()}&view=${view}`);
+   * return await res.json();
+   * }
+   * });
+   */
   constructor(options) {
     let resolvedContainer = null;
 
@@ -92,7 +154,6 @@ export default class EventResource {
   _buildEventsMap = () => {
     this.eventsMap.clear();
     for (const ev of this.events) {
-      // PERFORMANCE FIX: Use '::' as a delimiter in case user IDs contain hyphens
       const key = `${ev.roomId}::${ev.timeId}`;
       if (!this.eventsMap.has(key)) {
         this.eventsMap.set(key, []);
@@ -101,17 +162,38 @@ export default class EventResource {
     }
   };
 
+  /**
+   * Forces a chronological state shift, rewiring internal date parameters and firing synchronous/asynchronous re-render loops.
+   * @param {Date|string|number} newDate - REQUIRED: The new calendar baseline target date parameter.
+   * @returns {Promise<void>} Resolves automatically when the async data refetch and complete re-render lifecycle are complete.
+   * @example
+   * await calendar.setDate('2026-10-31');
+   */
   setDate = async (newDate) => {
     this.currentDate = new Date(newDate);
-    await this.forceRender(); // Requires full rebuild to evaluate new holidays
+    await this.forceRender();
   };
 
+  /**
+   * Mutates the application structural layout framework dynamically between daily and weekly granularities.
+   * @param {'daily'|'weekly'} newView - REQUIRED: The strict target structural mode selection string.
+   * @returns {Promise<void>} Resolves when the refetch, DOM teardown, and structural framework update complete.
+   * @example
+   * await calendar.setView('weekly');
+   */
   setView = async (newView) => {
     if (this.currentView === newView) return;
     this.currentView = newView;
     await this.forceRender();
   };
 
+  /**
+   * Calculates timeline vector offsets based on the active view mode, steps the internal date parameter, and triggers reconciliations.
+   * @param {'prev'|'next'} direction - REQUIRED: The chronological vector direction keyword.
+   * @returns {Promise<void>} Resolves upon successful navigation and canvas redraw.
+   * @example
+   * await calendar.navigate('next');
+   */
   navigate = async (direction) => {
     const daysToMove = this.currentView === "weekly" ? 7 : 1;
     const multiplier = direction === "next" ? 1 : -1;
@@ -124,31 +206,53 @@ export default class EventResource {
 
   // --- Public API ---
 
+  /**
+   * Injects a raw configuration event into the application data state. Recompiles the collision map and forces a high-speed DOM update.
+   * @param {CalendarEvent} newEvent - REQUIRED: A valid object data map matching configuration structural specs exactly.
+   * @returns {void}
+   * @example
+   * calendar.addEvent({ id: 'evt-999', roomId: 'r1', timeId: 't1', title: 'Emergency Sync' });
+   */
   addEvent = (newEvent) => {
     this.events.push(newEvent);
     this._buildEventsMap();
-    // PERFORMANCE FIX: Only redraw the events, leave the layout untouched
     this._renderEvents();
   };
 
+  /**
+   * Executes a hard delete across the internal event arrays based strictly on a uniquely matched id reference string.
+   * @param {string|number} eventId - REQUIRED: The exact, unique reference key index matching the target CalendarEvent.id.
+   * @returns {void}
+   * @example
+   * calendar.removeEvent('evt-999');
+   */
   removeEvent = (eventId) => {
     this.events = this.events.filter((e) => e.id !== eventId);
     this._buildEventsMap();
-    // PERFORMANCE FIX: Only redraw the events, leave the layout untouched
     this._renderEvents();
   };
 
+  /**
+   * Wipes out all transient operational event records cached in client memory structures while preserving column rules and grid row configurations.
+   * @returns {void}
+   * @example
+   * calendar.clearAllEvents();
+   */
   clearAllEvents = () => {
     this.events = [];
     this.eventsMap.clear();
-    // PERFORMANCE FIX: Fast clear of events without layout thrashing
     this._renderEvents();
   };
 
+  /**
+   * Triggers a comprehensive data replenishment cycle. Evaluates external fetch connectors, updates map caches, and rebuilds the visual DOM.
+   * @returns {Promise<void>} Resolves once all external data resolves and the DOM reconciliation concludes successfully.
+   * @example
+   * await calendar.forceRender();
+   */
   forceRender = async () => {
     if (this.isFetching) return;
 
-    // 1. Draw empty skeleton instantly based on current memory
     this.render();
 
     const hasAsyncSources =
@@ -188,10 +292,17 @@ export default class EventResource {
     }
 
     this._buildEventsMap();
-    // 2. Re-render entirely to apply fetched layout rules and fetched events
     this.render();
   };
 
+  /**
+   * Executes irreversible teardown routines protecting application host memory state cycles.
+   * Wipes parameters, drops listener closures, clears map caches, and securely unmounts UI sub-trees.
+   * @returns {void}
+   * @example
+   * calendar.destroy();
+   * calendar = null;
+   */
   destroy = () => {
     this.events = [];
     this.rooms = [];
@@ -299,17 +410,14 @@ export default class EventResource {
   /**
    * Manual render hook. Triggers a complete synchronization of the Skeleton UI and the Data Layer.
    * @returns {void}
+   * @example
+   * calendar.render();
    */
   render = () => {
     this._renderSkeleton();
     this._renderEvents();
   };
 
-  /**
-   * PERFORMANCE FIX: Renders ONLY the static layout (rows, columns, headers, empty cells).
-   * Never touches actual event data or cards.
-   * @private
-   */
   _renderSkeleton = () => {
     this.container.innerHTML = "";
 
@@ -362,14 +470,11 @@ export default class EventResource {
         const cell = document.createElement("div");
         cell.className = `er-grid-cell ${activeHoliday ? "er-holiday-cell" : ""}`;
 
-        // Inject queryable coordinates for high-speed DOM updates
         cell.dataset.roomId = room.id;
         cell.dataset.timeId = time.id;
 
         cell.addEventListener("click", () => {
           if (this.onCellClick) {
-            // PERFORMANCE FIX: Dynamically fetch current events at click time.
-            // Avoids needing to detach/reattach listeners when data changes.
             const currentEvents =
               this.eventsMap.get(`${room.id}::${time.id}`) || [];
 
@@ -406,25 +511,17 @@ export default class EventResource {
     this.container.appendChild(wrapper);
   };
 
-  /**
-   * PERFORMANCE FIX: Renders ONLY the event cards. Leaves the skeleton UI completely intact.
-   * Uses O(1) DOM targeting via data attributes.
-   * @private
-   */
   _renderEvents = () => {
-    // 1. Wipe only the existing event DOM nodes, leaving empty cells perfectly intact
     const existingEvents = this.container.querySelectorAll(".er-event");
     existingEvents.forEach((el) => el.remove());
 
     const activeHoliday = this._getHolidayForDate(this.currentDate);
 
-    // 2. Map and inject fresh events into their specific coordinate cells
     this.events.forEach((ev) => {
       const cell = this.container.querySelector(
         `[data-room-id="${ev.roomId}"][data-time-id="${ev.timeId}"]`,
       );
 
-      // If cell doesn't exist (e.g., event is scheduled for a room not currently in view), skip rendering
       if (!cell) return;
 
       const eventDiv = document.createElement("div");
@@ -440,11 +537,9 @@ export default class EventResource {
       eventDiv.addEventListener("click", (e) => {
         e.stopPropagation();
         if (this.onEventClick) {
-          // Dynamically fetch sibling events sharing this exact coordinate
           const sharedEvents =
             this.eventsMap.get(`${ev.roomId}::${ev.timeId}`) || [];
 
-          // Look up current row/col index dynamically based on UI position
           const roomIndex = this.rooms.findIndex(
             (r) => String(r.id) === String(ev.roomId),
           );
