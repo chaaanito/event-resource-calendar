@@ -1,6 +1,6 @@
 {
   "name": "@chaaanito/event-resource-calendar",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chaaanito/event-resource-calendar.git"
@@ -11,7 +11,21 @@
   "homepage": "https://github.com/chaaanito/event-resource-calendar#readme",
   "type": "module",
   "main": "src/index.js",
+  "types": "dist/types/index.d.ts",
+  "style": "src/styles.css",
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./style.css": "./src/styles.css"
+  },
+  "scripts": {
+    "build:types": "tsc -p jsconfig.json",
+    "prepublishOnly": "npm run build:types"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
   }
 }
