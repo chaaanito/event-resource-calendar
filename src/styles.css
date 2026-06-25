@@ -146,11 +146,9 @@
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   height: 100%;
-  width: 100%;
-  box-sizing: border-box;
-  white-space: normal;
-  word-break: break-word;
-  overflow: hidden;
+  width: auto;
+  min-width: max-content;
+  white-space: nowrap;
 }
 .er-event:hover {
   transform: scale(1.02);
