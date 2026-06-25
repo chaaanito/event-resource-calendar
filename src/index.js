@@ -433,7 +433,7 @@ export default class EventResource {
 
     const grid = document.createElement("div");
     grid.className = `er-grid ${this.stickyHeaders ? "er-sticky" : ""}`.trim();
-    grid.style.gridTemplateColumns = `150px repeat(${this.timeSlots.length || 1}, minmax(120px, max-content))`;
+    grid.style.gridTemplateColumns = `150px repeat(${this.timeSlots.length || 1}, minmax(120px, auto))`;
 
     const corner = document.createElement("div");
     corner.className = "er-header-cell er-corner";
