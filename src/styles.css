@@ -72,6 +72,7 @@
 .er-grid {
   display: grid;
   grid-auto-rows: minmax(60px, auto);
+  min-width: max-content;
 }
 .er-header-cell {
   padding: 12px;
@@ -127,6 +128,7 @@
   flex-direction: column;
   gap: 4px;
   box-sizing: border-box;
+  min-width: max-content;
 }
 .er-grid-cell:hover {
   background-color: #f3f4f6;
