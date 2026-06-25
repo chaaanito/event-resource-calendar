@@ -474,6 +474,10 @@ export default class EventResource {
         cell.dataset.timeId = time.id;
 
         cell.addEventListener("click", () => {
+          if (cell.classList.contains("er-has-events")) {
+            return;
+          }
+
           if (this.onCellClick) {
             const currentEvents =
               this.eventsMap.get(`${room.id}::${time.id}`) || [];
@@ -515,6 +519,12 @@ export default class EventResource {
     const existingEvents = this.container.querySelectorAll(".er-event");
     existingEvents.forEach((el) => el.remove());
 
+    const existingActiveCells =
+      this.container.querySelectorAll(".er-has-events");
+    existingActiveCells.forEach((cell) =>
+      cell.classList.remove("er-has-events"),
+    );
+
     const activeHoliday = this._getHolidayForDate(this.currentDate);
 
     this.events.forEach((ev) => {
@@ -523,6 +533,8 @@ export default class EventResource {
       );
 
       if (!cell) return;
+
+      cell.classList.add("er-has-events");
 
       const eventDiv = document.createElement("div");
       eventDiv.className = "er-event";
@@ -536,6 +548,7 @@ export default class EventResource {
 
       eventDiv.addEventListener("click", (e) => {
         e.stopPropagation();
+
         if (this.onEventClick) {
           const sharedEvents =
             this.eventsMap.get(`${ev.roomId}::${ev.timeId}`) || [];

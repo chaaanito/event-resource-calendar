@@ -169,3 +169,15 @@
   color: #6b7280;
   font-weight: 400;
 }
+
+.er-grid-cell:not(.er-has-events):hover {
+  background-color: #f3f4f6;
+}
+
+.er-grid-cell.er-has-events {
+  cursor: default;
+}
+
+.er-holiday-cell:not(.er-has-events):hover {
+  background-color: #fef3c7;
+}
