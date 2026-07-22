@@ -1,59 +1,59 @@
 # EventResource
 
-A lightweight, high-performance vanilla JavaScript resource calendar library. Features skeleton-first asynchronous rendering, O(1) internal event mapping, extensible rich HTML layout renderers, holiday detection, and scroll freezing.
+A highly versatile, lightweight, high-performance vanilla JavaScript matrix grid library. Features skeleton-first asynchronous rendering, O(1) internal event mapping, extensible rich HTML layout renderers, holiday detection, double-axis scroll freezing, and DOM-fragment rendering for extreme efficiency.
+
+Unlike standard calendars, this library is completely agnostic. Use it to map Teachers to Students, Equipment to Projects, or Spaces to Time slots.
 
 # Installation
 
-```bash
 npm install @chaaanito/event-resource-calendar
-```
 
 # Quick Start
 
-```javascript
 import EventResource from "@chaaanito/event-resource-calendar";
 import "@chaaanito/event-resource-calendar/style.css"; // Required for grid structural styling
 
-const calendar = new EventResource({
-  container: "#calendar-root",
-  defaultView: "daily",
-  defaultDate: "2026-06-24",
-  showControls: true,
-  stickyHeaders: true,
-  rooms: [
-    {
-      id: "r1",
-      name: "Studio A",
-      capacity: 10,
-    },
-  ],
-  timeSlots: [
-    {
-      id: "t1",
-      label: "09:00 AM",
-    },
-  ],
-  initialEvents: [
-    {
-      id: "evt-1",
-      roomId: "r1",
-      timeId: "t1",
-      title: "Morning Sync",
-      color: "#10b981",
-    },
-  ],
+const grid = new EventResource({
+container: "#grid-root",
+defaultView: "daily",
+defaultDate: "2026-06-24",
+showControls: true,
+stickyHeaders: true,
+// Define Rows (Resources)
+resources: [
+{
+id: "r1",
+name: "Dr. Smith (Teacher)",
+},
+],
+// Define Columns
+columns: [
+{
+id: "c1",
+label: "Math 101 (Class)",
+},
+],
+// Allocate Events to intersections
+initialEvents: [
+{
+id: "evt-1",
+resourceId: "r1",
+columnId: "c1",
+title: "Semester Assignment",
+color: "#10b981",
+},
+],
 });
-```
 
 ## Configuration Options
 
-Pass these properties into the `EventResource` constructor to customize your calendar.
+Pass these properties into the `EventResource` constructor to customize your matrix grid.
 
 | Property          | Type           | Default      | Description                                                           |
 | :---------------- | :------------- | :----------- | :-------------------------------------------------------------------- |
 | **container**     | `string\|Node` | _Required_   | CSS selector or explicit DOM pointer mount node.                      |
-| **rooms**         | `Array`        | `[]`         | Master source list establishing rows along the vertical plane.        |
-| **timeSlots**     | `Array`        | `[]`         | Master source list defining columns mapped along the horizontal path. |
+| **resources**     | `Array`        | `[]`         | Master source list establishing rows along the vertical plane.        |
+| **columns**       | `Array`        | `[]`         | Master source list defining columns mapped along the horizontal path. |
 | **initialEvents** | `Array`        | `[]`         | In-memory event array populating coordinates on load.                 |
 | **holidays**      | `Array`        | `[]`         | Configuration identifying structural exceptions and global days.      |
 | **customButtons** | `Array`        | `[]`         | Extensible collections rendering specialized tool structures.         |
@@ -64,56 +64,56 @@ Pass these properties into the `EventResource` constructor to customize your cal
 
 ### Callbacks & Renderers
 
-| Property                 | Type       | Description                                                                  |
-| :----------------------- | :--------- | :--------------------------------------------------------------------------- |
-| **onCellClick**          | `Function` | Callback capturing clicks targeting empty coordinates.                       |
-| **onEventClick**         | `Function` | Callback targeting allocated calendar card coordinates.                      |
-| **fetchEvents**          | `Function` | Async method resolving to an array of `CalendarEvent` objects.               |
-| **fetchRooms**           | `Function` | Async method resolving to an array of `CalendarRoom` objects dynamically.    |
-| **fetchTimeSlots**       | `Function` | Async method resolving to an array of `TimeSlot` objects dynamically.        |
-| **fetchHolidays**        | `Function` | Async method resolving to an array of `CalendarHoliday` objects dynamically. |
-| **renderRoomHeader**     | `Function` | HTML generator returning structural formatting strings for row slots.        |
-| **renderTimeSlotHeader** | `Function` | HTML generator returning structural formatting strings for column slots.     |
-| **renderEvent**          | `Function` | HTML generator returning custom markup for individual event cards.           |
+| Property                 | Type       | Description                                                               |
+| :----------------------- | :--------- | :------------------------------------------------------------------------ |
+| **onCellClick**          | `Function` | Callback capturing clicks targeting empty coordinates.                    |
+| **onEventClick**         | `Function` | Callback targeting allocated grid card coordinates.                       |
+| **fetchEvents**          | `Function` | Async method resolving to an array of `GridEvent` objects.                |
+| **fetchResources**       | `Function` | Async method resolving to an array of `GridResource` objects dynamically. |
+| **fetchColumns**         | `Function` | Async method resolving to an array of `GridColumn` objects dynamically.   |
+| **fetchHolidays**        | `Function` | Async method resolving to an array of `GridHoliday` objects dynamically.  |
+| **renderResourceHeader** | `Function` | HTML generator returning structural formatting strings for row slots.     |
+| **renderColumnHeader**   | `Function` | HTML generator returning structural formatting strings for column slots.  |
+| **renderEvent**          | `Function` | HTML generator returning custom markup for individual event cards.        |
 
 ---
 
 ## Data Models
 
-### CalendarRoom
+### GridResource
 
-Defines a resource row within the calendar matrix grid layout.
+Defines a resource row within the matrix grid layout.
+
+| Property  | Type             | Description                                               |
+| :-------- | :--------------- | :-------------------------------------------------------- |
+| **id**    | `string\|number` | **Required.** Unique identifier for the row or resource.  |
+| **name**  | `string`         | **Required.** Fallback display title of the resource.     |
+| **[key]** | `any`            | Optional custom properties (e.g., capacity, role, title). |
+
+### GridColumn
+
+Defines a column structure partitioning the matrix grid workspace.
 
 | Property  | Type             | Description                                                |
 | :-------- | :--------------- | :--------------------------------------------------------- |
-| **id**    | `string\|number` | **Required.** Unique identifier for the room or resource.  |
-| **name**  | `string`         | **Required.** Fallback display title of the room/resource. |
-| **[key]** | `any`            | Optional custom properties (e.g., capacity, hasProjector). |
+| **id**    | `string\|number` | **Required.** Unique identifier for the column slot.       |
+| **label** | `string`         | **Required.** Fallback column display text.                |
+| **[key]** | `any`            | Optional extensible properties (e.g., isLunchHour, grade). |
 
-### TimeSlot
+### GridEvent
 
-Defines a timeline column structure partitioning the matrix grid workspace.
+Represents an allocated event mapped directly into a specific intersection cell.
 
-| Property  | Type             | Description                                                 |
-| :-------- | :--------------- | :---------------------------------------------------------- |
-| **id**    | `string\|number` | **Required.** Unique identifier for the chronological slot. |
-| **label** | `string`         | **Required.** Fallback timeline display text.               |
-| **[key]** | `any`            | Optional extensible properties (e.g., isLunchHour).         |
+| Property       | Type             | Description                                                           |
+| :------------- | :--------------- | :-------------------------------------------------------------------- |
+| **id**         | `string\|number` | **Required.** Unique identifier for the scheduled event element.      |
+| **resourceId** | `string\|number` | **Required.** Foreign key binding the item to a valid Resource ID.    |
+| **columnId**   | `string\|number` | **Required.** Foreign key binding the item to a valid Column ID.      |
+| **title**      | `string`         | **Required.** Plain-text title injected inside the card element.      |
+| **color**      | `string`         | Optional CSS color value for the background card. Default: `#3b82f6`. |
+| **[key]**      | `any`            | Optional custom meta data attributes parsed down to click payloads.   |
 
-### CalendarEvent
-
-Represents an allocated timeline event mapped directly into a specific intersection cell.
-
-| Property   | Type             | Description                                                           |
-| :--------- | :--------------- | :-------------------------------------------------------------------- |
-| **id**     | `string\|number` | **Required.** Unique identifier for the scheduled event element.      |
-| **roomId** | `string\|number` | **Required.** Foreign key binding the item to a valid Room ID.        |
-| **timeId** | `string\|number` | **Required.** Foreign key binding the item to a valid TimeSlot ID.    |
-| **title**  | `string`         | **Required.** Plain-text title injected inside the card element.      |
-| **color**  | `string`         | Optional CSS color value for the background card. Default: `#3b82f6`. |
-| **[key]**  | `any`            | Optional custom meta data attributes parsed down to click payloads.   |
-
-### CalendarHoliday
+### GridHoliday
 
 Maps specific dates to holiday statuses, shifting backgrounds and appending context data.
 
@@ -133,14 +133,14 @@ When interacting with the grid, the library fires callbacks with comprehensive c
 
 Shared universally across grid click response lifecycles.
 
-| Property    | Type           | Description                                                        |
-| :---------- | :------------- | :----------------------------------------------------------------- |
-| **date**    | `Date`         | Chronological state baseline actively mounted inside the viewport. |
-| **view**    | `string`       | Current structural mode index configuration ('daily' or 'weekly'). |
-| **holiday** | `Object\|null` | Associated holiday data object if applicable to current date.      |
-| **row**     | `Object`       | Track metadata coordinates (`index` and `data` objects).           |
-| **col**     | `Object`       | Timeline metadata coordinates (`index` and `data` objects).        |
-| **cell**    | `Object`       | Target cell contents (`roomId`, `timeId`, and `events` array).     |
+| Property    | Type           | Description                                                          |
+| :---------- | :------------- | :------------------------------------------------------------------- |
+| **date**    | `Date`         | Chronological state baseline actively mounted inside the viewport.   |
+| **view**    | `string`       | Current structural mode index configuration ('daily' or 'weekly').   |
+| **holiday** | `Object\|null` | Associated holiday data object if applicable to current date.        |
+| **row**     | `Object`       | Track metadata coordinates (`index` and `data` objects).             |
+| **col**     | `Object`       | Column metadata coordinates (`index` and `data` objects).            |
+| **cell**    | `Object`       | Target cell contents (`resourceId`, `columnId`, and `events` array). |
 
 ### EventClickPayload (Event Card Click)
 
@@ -155,17 +155,18 @@ Inherits all properties from `ClickContextPayload` and adds:
 
 ## Public API Methods
 
-Once instantiated, the calendar instance exposes methods to control the grid programmatically.
+Once instantiated, the grid instance exposes methods to control it programmatically.
 
-| Method                     | Description                                                                                     |
-| :------------------------- | :---------------------------------------------------------------------------------------------- |
-| **`addEvent(event)`**      | Injects a new event and performs an isolated, high-speed DOM append without layout thrashing.   |
-| **`removeEvent(eventId)`** | Purges a specific event by ID from memory and removes it from the UI instantly.                 |
-| **`clearAllEvents()`**     | Wipes all events from the board while preserving the layout skeleton rules.                     |
-| **`setDate(newDate)`**     | Jumps the calendar to a specific date. Automatically triggers `fetch` hooks if configured.      |
-| **`setView(newView)`**     | Mutates the layout granularity between daily and weekly modes.                                  |
-| **`Maps(direction)`**      | Steps the timeline forward or backward based on the current view multiplier.                    |
-| **`forceRender()`**        | Triggers a manual full data replenishment cycle, drawing the skeleton and resolving all asyncs. |
-| **`destroy()`**            | Unmounts the DOM, clears memory caches, and drops listener closures to prevent leaks.           |
-
----
+| Method                              | Description                                                                                     |
+| :---------------------------------- | :---------------------------------------------------------------------------------------------- |
+| **`setResources(newResources)`**    | Swaps out the vertical axis data dynamically and redraws the grid skeleton.                     |
+| **`setColumns(newColumns)`**        | Swaps out the horizontal axis data dynamically and redraws the grid skeleton.                   |
+| **`addEvent(event)`**               | Injects a new event and performs an isolated, high-speed DOM append without layout thrashing.   |
+| **`updateEvent(eventId, newData)`** | Dynamically updates an existing event's properties or location.                                 |
+| **`removeEvent(eventId)`**          | Purges a specific event by ID from memory and removes it from the UI instantly.                 |
+| **`clearAllEvents()`**              | Wipes all events from the board while preserving the layout skeleton rules.                     |
+| **`setDate(newDate)`**              | Jumps the grid to a specific date. Automatically triggers `fetch` hooks if configured.          |
+| **`setView(newView)`**              | Mutates the layout granularity between custom structural views.                                 |
+| **`navigate(direction)`**           | Steps the timeline forward or backward based on the current view multiplier.                    |
+| **`forceRender()`**                 | Triggers a manual full data replenishment cycle, drawing the skeleton and resolving all asyncs. |
+| **`destroy()`**                     | Unmounts the DOM, clears memory caches, and drops listener closures to prevent leaks.           |
