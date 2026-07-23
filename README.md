@@ -10,6 +10,7 @@ npm install @chaaanito/event-resource-calendar
 
 # Quick Start
 
+```javascript
 import EventResource from "@chaaanito/event-resource-calendar";
 import "@chaaanito/event-resource-calendar/style.css"; // Required for grid structural styling
 
@@ -44,6 +45,7 @@ color: "#10b981",
 },
 ],
 });
+```
 
 ## Configuration Options
 
