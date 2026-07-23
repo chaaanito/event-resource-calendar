@@ -6,9 +6,21 @@
  * @typedef {import('./event-resource.types.js').GridHoliday} GridHoliday
  */
 
+/**
+ * EventResource
+ * A lightweight, high-performance vanilla JavaScript matrix grid library.
+ * Features O(1) internal event mapping, DOM-fragment rendering, and extensible rich HTML layout renderers.
+ */
 export default class EventResource {
+  /**
+   * Initializes a new EventResource grid instance, mounts it to the DOM, and fires initial render passes.
+   * @param {EventResourceOptions} options - Configuration parameters required to bootstrap the grid.
+   * @throws {Error} Throws if a valid `container` element, Node, or string selector cannot be resolved in the DOM.
+   */
   constructor(options) {
+    /** @type {HTMLElement|null} */
     let resolvedContainer = null;
+
     if (typeof options.container === "string") {
       resolvedContainer = document.querySelector(options.container);
       if (!resolvedContainer) {
@@ -34,25 +46,36 @@ export default class EventResource {
       );
     }
 
+    /** @type {HTMLElement} The root DOM mount point. */
     this.container = resolvedContainer;
 
-    // Data Options
+    // --- Data Options ---
+    /** @type {GridResource[]} */
     this.resources = options.resources || [];
+    /** @type {GridColumn[]} */
     this.columns = options.columns || [];
+    /** @type {GridEvent[]} */
     this.events = options.initialEvents || [];
+    /** @type {GridHoliday[]} */
     this.holidays = options.holidays || [];
+    /** @type {CustomButton[]} */
     this.customButtons = options.customButtons || [];
 
-    // UI Controls & State
+    // --- UI Controls & State ---
+    /** @type {boolean} */
     this.showControls = options.showControls || false;
+    /** @type {boolean} */
     this.stickyHeaders = options.stickyHeaders !== false;
+    /** @type {string} */
     this.currentView = options.defaultView || "daily";
+    /** @type {Date} */
     this.currentDate = options.defaultDate
       ? new Date(options.defaultDate)
       : new Date();
+    /** @type {boolean} Flag indicating if async data is currently resolving. */
     this.isFetching = false;
 
-    // Callbacks & Async Fetchers
+    // --- Callbacks & Async Fetchers ---
     this.onCellClick = options.onCellClick || null;
     this.onEventClick = options.onEventClick || null;
     this.fetchEvents = options.fetchEvents || null;
@@ -63,17 +86,33 @@ export default class EventResource {
     this.renderColumnHeader = options.renderColumnHeader || null;
     this.renderEvent = options.renderEvent || null;
 
+    /**
+     * @type {Map<string, GridEvent[]>}
+     * O(1) Lookup map binding coordinate strings (`resourceId::columnId`) to event arrays.
+     */
     this.eventsMap = new Map();
+
     this._buildEventsMap();
     this.forceRender();
   }
 
-  // --- State & Date Management ---
+  /**
+   * Internal stringifier for temporal comparisons.
+   * @private
+   * @param {Date|string|number} dateObj - The raw date input.
+   * @returns {string} Normalized YYYY-MM-DD string.
+   */
   _getNormalizedDateString = (dateObj) => {
     const d = new Date(dateObj);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   };
 
+  /**
+   * Detects if a specific date intersects with a configured structural holiday.
+   * @private
+   * @param {Date|string|number} dateObj - The target temporal coordinate.
+   * @returns {GridHoliday|null} The matching holiday object, or null.
+   */
   _getHolidayForDate = (dateObj) => {
     const targetDate = this._getNormalizedDateString(dateObj);
     return (
@@ -83,6 +122,11 @@ export default class EventResource {
     );
   };
 
+  /**
+   * Compiles the high-speed O(1) collision map tracking event coordinate allocations.
+   * @private
+   * @returns {void}
+   */
   _buildEventsMap = () => {
     this.eventsMap.clear();
     for (const ev of this.events) {
@@ -94,17 +138,32 @@ export default class EventResource {
     }
   };
 
+  /**
+   * Forces a chronological state shift, rewiring internal date parameters and firing synchronous/asynchronous re-render loops.
+   * @param {Date|string|number} newDate - The new calendar baseline target date parameter.
+   * @returns {Promise<void>} Resolves when the refetch and re-render lifecycle are complete.
+   */
   setDate = async (newDate) => {
     this.currentDate = new Date(newDate);
     await this.forceRender();
   };
 
+  /**
+   * Mutates the application structural layout framework dynamically (e.g., 'daily' vs 'weekly').
+   * @param {string} newView - The target structural mode selection string.
+   * @returns {Promise<void>} Resolves when the structural framework update completes.
+   */
   setView = async (newView) => {
     if (this.currentView === newView) return;
     this.currentView = newView;
     await this.forceRender();
   };
 
+  /**
+   * Calculates timeline vector offsets, steps the internal date parameter, and triggers reconciliations.
+   * @param {'prev'|'next'} direction - The chronological vector direction keyword.
+   * @returns {Promise<void>} Resolves upon successful navigation and canvas redraw.
+   */
   navigate = async (direction) => {
     const daysToMove = this.currentView === "weekly" ? 7 : 1;
     const multiplier = direction === "next" ? 1 : -1;
@@ -113,23 +172,43 @@ export default class EventResource {
     await this.setDate(newDate);
   };
 
-  // --- Extended Public API ---
+  /**
+   * Swaps out the vertical axis data dynamically and redraws the grid skeleton.
+   * @param {GridResource[]} newResources - The new array of resources.
+   * @returns {void}
+   */
   setResources = (newResources) => {
     this.resources = newResources;
     this.render();
   };
 
+  /**
+   * Swaps out the horizontal axis data dynamically and redraws the grid skeleton.
+   * @param {GridColumn[]} newColumns - The new array of columns.
+   * @returns {void}
+   */
   setColumns = (newColumns) => {
     this.columns = newColumns;
     this.render();
   };
 
+  /**
+   * Injects a new event into the matrix, recompiles the collision map, and renders it.
+   * @param {GridEvent} newEvent - A valid object matching the Event configuration specs.
+   * @returns {void}
+   */
   addEvent = (newEvent) => {
     this.events.push(newEvent);
     this._buildEventsMap();
     this._renderEvents();
   };
 
+  /**
+   * Dynamically updates an existing event's properties or grid coordinates.
+   * @param {string|number} eventId - The unique ID of the event to update.
+   * @param {Partial<GridEvent>} updatedData - The properties to overwrite.
+   * @returns {void}
+   */
   updateEvent = (eventId, updatedData) => {
     const index = this.events.findIndex(
       (e) => String(e.id) === String(eventId),
@@ -141,18 +220,31 @@ export default class EventResource {
     }
   };
 
+  /**
+   * Executes a hard delete across the internal event arrays based strictly on ID.
+   * @param {string|number} eventId - The unique reference ID matching the target GridEvent.
+   * @returns {void}
+   */
   removeEvent = (eventId) => {
     this.events = this.events.filter((e) => String(e.id) !== String(eventId));
     this._buildEventsMap();
     this._renderEvents();
   };
 
+  /**
+   * Wipes out all transient operational event records cached in memory while preserving structural layout.
+   * @returns {void}
+   */
   clearAllEvents = () => {
     this.events = [];
     this.eventsMap.clear();
     this._renderEvents();
   };
 
+  /**
+   * Triggers a comprehensive data replenishment cycle. Evaluates external fetch connectors and redraws the UI.
+   * @returns {Promise<void>} Resolves once all external data resolves and the DOM reconciliation concludes.
+   */
   forceRender = async () => {
     if (this.isFetching) return;
     this.render();
@@ -197,6 +289,10 @@ export default class EventResource {
     this.render();
   };
 
+  /**
+   * Irreversible teardown routine protecting host memory bounds. Drops listeners and unmounts UI sub-trees.
+   * @returns {void}
+   */
   destroy = () => {
     this.events = [];
     this.resources = [];
@@ -215,7 +311,12 @@ export default class EventResource {
     }
   };
 
-  // --- DOM Creation & Rendering ---
+  /**
+   * Internal generator injecting structural management tools (navigators, datepickers, custom actions).
+   * @private
+   * @param {HTMLElement} wrapper - The host container sub-tree.
+   * @returns {void}
+   */
   _renderToolbar = (wrapper) => {
     const toolbar = document.createElement("div");
     toolbar.className = "er-toolbar";
@@ -294,11 +395,21 @@ export default class EventResource {
     wrapper.appendChild(toolbar);
   };
 
+  /**
+   * Manual render hook. Triggers a complete synchronization of the skeleton and event nodes.
+   * @returns {void}
+   */
   render = () => {
     this._renderSkeleton();
     this._renderEvents();
   };
 
+  /**
+   * Resolves global delegation coordinates intercepting bubbling click events.
+   * @private
+   * @param {MouseEvent} e - Native click event.
+   * @returns {void}
+   */
   _handleGridClick = (e) => {
     const activeHoliday = this._getHolidayForDate(this.currentDate);
 
@@ -366,6 +477,11 @@ export default class EventResource {
     }
   };
 
+  /**
+   * Draws the baseline grid architecture, mapping axes and binding global delegation listeners via fragment batching.
+   * @private
+   * @returns {void}
+   */
   _renderSkeleton = () => {
     this.container.innerHTML = "";
 
@@ -449,8 +565,12 @@ export default class EventResource {
     this.container.appendChild(fragment);
   };
 
+  /**
+   * Projects active memory state into the structural skeleton visually binding elements to intersections.
+   * @private
+   * @returns {void}
+   */
   _renderEvents = () => {
-    // Clean up old events efficiently
     const existingEvents = this.container.querySelectorAll(".er-event");
     existingEvents.forEach((el) => el.remove());
 
@@ -469,7 +589,7 @@ export default class EventResource {
       cell.classList.add("er-has-events");
       const eventDiv = document.createElement("div");
       eventDiv.className = "er-event";
-      eventDiv.dataset.eventId = ev.id; // Bound for event delegation lookup
+      eventDiv.dataset.eventId = ev.id;
       eventDiv.style.backgroundColor = ev.color || "#3b82f6";
 
       if (typeof this.renderEvent === "function") {

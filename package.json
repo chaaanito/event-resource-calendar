@@ -1,6 +1,7 @@
 {
   "name": "@chaaanito/event-resource-calendar",
   "version": "2.0.0",
+  "description": "A highly versatile, lightweight, high-performance vanilla JavaScript matrix grid library.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chaaanito/event-resource-calendar.git"
@@ -11,14 +12,29 @@
   "homepage": "https://github.com/chaaanito/event-resource-calendar#readme",
   "type": "module",
   "main": "src/index.js",
-  "types": "dist/types/index.d.ts",
+  "types": "src/event-resource.types.js",
   "style": "src/styles.css",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./src/event-resource.types.js",
       "import": "./src/index.js",
       "default": "./src/index.js"
     },
     "./style.css": "./src/styles.css"
-  }
+  },
+  "files": [
+    "src/index.js",
+    "src/event-resource.types.js",
+    "src/styles.css"
+  ],
+  "keywords": [
+    "calendar",
+    "resource-calendar",
+    "scheduler",
+    "matrix-grid",
+    "vanilla-js",
+    "events"
+  ],
+  "author": "chaaanito",
+  "license": "MIT"
 }
