@@ -16,11 +16,18 @@ export default class EventResource {
    * Initializes a new EventResource grid instance, mounts it to the DOM, and fires initial render passes.
    * @param {EventResourceOptions} options - Configuration parameters required to bootstrap the grid.
    * @throws {Error} Throws if a valid `container` element, Node, or string selector cannot be resolved in the DOM.
+   * @example
+   * const grid = new EventResource({
+   *   container: '#app',
+   *   resources: [{ id: 'r1', name: 'Dev Team' }],
+   *   columns: [{ id: 'c1', label: 'Monday' }],
+   *   initialEvents: [{ id: 'e1', resourceId: 'r1', columnId: 'c1', title: 'Sprint Planning' }],
+   *   showControls: true
+   * });
    */
   constructor(options) {
     /** @type {HTMLElement|null} */
     let resolvedContainer = null;
-
     if (typeof options.container === "string") {
       resolvedContainer = document.querySelector(options.container);
       if (!resolvedContainer) {
@@ -39,7 +46,6 @@ export default class EventResource {
     ) {
       resolvedContainer = options.container[0];
     }
-
     if (!resolvedContainer) {
       throw new Error(
         "EventResource: A valid container is required and must exist in the DOM.",
@@ -72,6 +78,7 @@ export default class EventResource {
     this.currentDate = options.defaultDate
       ? new Date(options.defaultDate)
       : new Date();
+
     /** @type {boolean} Flag indicating if async data is currently resolving. */
     this.isFetching = false;
 
@@ -91,7 +98,6 @@ export default class EventResource {
      * O(1) Lookup map binding coordinate strings (`resourceId::columnId`) to event arrays.
      */
     this.eventsMap = new Map();
-
     this._buildEventsMap();
     this.forceRender();
   }
@@ -142,6 +148,9 @@ export default class EventResource {
    * Forces a chronological state shift, rewiring internal date parameters and firing synchronous/asynchronous re-render loops.
    * @param {Date|string|number} newDate - The new calendar baseline target date parameter.
    * @returns {Promise<void>} Resolves when the refetch and re-render lifecycle are complete.
+   * @example
+   * await grid.setDate('2024-12-25');
+   * // Grid now displays data relative to Christmas 2024
    */
   setDate = async (newDate) => {
     this.currentDate = new Date(newDate);
@@ -152,6 +161,8 @@ export default class EventResource {
    * Mutates the application structural layout framework dynamically (e.g., 'daily' vs 'weekly').
    * @param {string} newView - The target structural mode selection string.
    * @returns {Promise<void>} Resolves when the structural framework update completes.
+   * @example
+   * await grid.setView('weekly');
    */
   setView = async (newView) => {
     if (this.currentView === newView) return;
@@ -163,6 +174,9 @@ export default class EventResource {
    * Calculates timeline vector offsets, steps the internal date parameter, and triggers reconciliations.
    * @param {'prev'|'next'} direction - The chronological vector direction keyword.
    * @returns {Promise<void>} Resolves upon successful navigation and canvas redraw.
+   * @example
+   * await grid.navigate('next');
+   * // Moves calendar forward by 1 day (or 7 days if view is 'weekly')
    */
   navigate = async (direction) => {
     const daysToMove = this.currentView === "weekly" ? 7 : 1;
@@ -176,6 +190,11 @@ export default class EventResource {
    * Swaps out the vertical axis data dynamically and redraws the grid skeleton.
    * @param {GridResource[]} newResources - The new array of resources.
    * @returns {void}
+   * @example
+   * grid.setResources([
+   *   { id: 'r1', name: 'Alice' },
+   *   { id: 'r2', name: 'Bob' }
+   * ]);
    */
   setResources = (newResources) => {
     this.resources = newResources;
@@ -186,6 +205,11 @@ export default class EventResource {
    * Swaps out the horizontal axis data dynamically and redraws the grid skeleton.
    * @param {GridColumn[]} newColumns - The new array of columns.
    * @returns {void}
+   * @example
+   * grid.setColumns([
+   *   { id: 'c1', label: 'Morning' },
+   *   { id: 'c2', label: 'Afternoon' }
+   * ]);
    */
   setColumns = (newColumns) => {
     this.columns = newColumns;
@@ -196,6 +220,14 @@ export default class EventResource {
    * Injects a new event into the matrix, recompiles the collision map, and renders it.
    * @param {GridEvent} newEvent - A valid object matching the Event configuration specs.
    * @returns {void}
+   * @example
+   * grid.addEvent({
+   *   id: 'new-evt-1',
+   *   resourceId: 'r1',
+   *   columnId: 'c1',
+   *   title: 'Ad-hoc Meeting',
+   *   color: '#ef4444'
+   * });
    */
   addEvent = (newEvent) => {
     this.events.push(newEvent);
@@ -208,6 +240,11 @@ export default class EventResource {
    * @param {string|number} eventId - The unique ID of the event to update.
    * @param {Partial<GridEvent>} updatedData - The properties to overwrite.
    * @returns {void}
+   * @example
+   * grid.updateEvent('new-evt-1', {
+   *   title: 'Rescheduled Meeting',
+   *   columnId: 'c2' // Moves the event to column 'c2'
+   * });
    */
   updateEvent = (eventId, updatedData) => {
     const index = this.events.findIndex(
@@ -224,6 +261,8 @@ export default class EventResource {
    * Executes a hard delete across the internal event arrays based strictly on ID.
    * @param {string|number} eventId - The unique reference ID matching the target GridEvent.
    * @returns {void}
+   * @example
+   * grid.removeEvent('new-evt-1');
    */
   removeEvent = (eventId) => {
     this.events = this.events.filter((e) => String(e.id) !== String(eventId));
@@ -234,6 +273,8 @@ export default class EventResource {
   /**
    * Wipes out all transient operational event records cached in memory while preserving structural layout.
    * @returns {void}
+   * @example
+   * grid.clearAllEvents();
    */
   clearAllEvents = () => {
     this.events = [];
@@ -244,17 +285,17 @@ export default class EventResource {
   /**
    * Triggers a comprehensive data replenishment cycle. Evaluates external fetch connectors and redraws the UI.
    * @returns {Promise<void>} Resolves once all external data resolves and the DOM reconciliation concludes.
+   * @example
+   * await grid.forceRender();
    */
   forceRender = async () => {
     if (this.isFetching) return;
     this.render();
-
     const hasAsyncSources =
       typeof this.fetchEvents === "function" ||
       typeof this.fetchResources === "function" ||
       typeof this.fetchColumns === "function" ||
       typeof this.fetchHolidays === "function";
-
     if (hasAsyncSources) {
       this.isFetching = true;
       try {
@@ -273,7 +314,6 @@ export default class EventResource {
               ? this.fetchHolidays(this.currentDate, this.currentView)
               : Promise.resolve(this.holidays),
           ]);
-
         this.events = freshEvents || [];
         this.resources = freshResources || [];
         this.columns = freshColumns || [];
@@ -284,7 +324,6 @@ export default class EventResource {
         this.isFetching = false;
       }
     }
-
     this._buildEventsMap();
     this.render();
   };
@@ -292,6 +331,9 @@ export default class EventResource {
   /**
    * Irreversible teardown routine protecting host memory bounds. Drops listeners and unmounts UI sub-trees.
    * @returns {void}
+   * @example
+   * grid.destroy();
+   * // Grid is unmounted and memory references cleared.
    */
   destroy = () => {
     this.events = [];
@@ -302,7 +344,6 @@ export default class EventResource {
     this.eventsMap.clear();
     this.onCellClick = null;
     this.onEventClick = null;
-
     if (this.container) {
       const wrapper = this.container.querySelector(".er-container");
       if (wrapper) {
@@ -320,7 +361,6 @@ export default class EventResource {
   _renderToolbar = (wrapper) => {
     const toolbar = document.createElement("div");
     toolbar.className = "er-toolbar";
-
     const navGroup = document.createElement("div");
     navGroup.className = "er-toolbar-group";
 
@@ -382,6 +422,7 @@ export default class EventResource {
       this.stickyHeaders = !this.stickyHeaders;
       this.render();
     };
+
     navGroup.appendChild(btnFreeze);
 
     const currentHoliday = this._getHolidayForDate(this.currentDate);
@@ -398,6 +439,9 @@ export default class EventResource {
   /**
    * Manual render hook. Triggers a complete synchronization of the skeleton and event nodes.
    * @returns {void}
+   * @example
+   * // In case a manual force sync is needed without touching async lifecycles
+   * grid.render();
    */
   render = () => {
     this._renderSkeleton();
@@ -412,7 +456,6 @@ export default class EventResource {
    */
   _handleGridClick = (e) => {
     const activeHoliday = this._getHolidayForDate(this.currentDate);
-
     // 1. Check for Event Click
     const eventEl = e.target.closest(".er-event");
     if (eventEl && this.onEventClick) {
@@ -420,7 +463,6 @@ export default class EventResource {
       const eventId = eventEl.dataset.eventId;
       const ev = this.events.find((ev) => String(ev.id) === String(eventId));
       if (!ev) return;
-
       const sharedEvents =
         this.eventsMap.get(`${ev.resourceId}::${ev.columnId}`) || [];
       const resourceIndex = this.resources.findIndex(
@@ -429,7 +471,6 @@ export default class EventResource {
       const colIndex = this.columns.findIndex(
         (c) => String(c.id) === String(ev.columnId),
       );
-
       this.onEventClick({
         event: ev,
         nativeEvent: e,
@@ -446,7 +487,6 @@ export default class EventResource {
       });
       return;
     }
-
     // 2. Check for Cell Click
     const cellEl = e.target.closest(".er-grid-cell");
     if (
@@ -456,7 +496,6 @@ export default class EventResource {
     ) {
       const resourceId = cellEl.dataset.resourceId;
       const columnId = cellEl.dataset.columnId;
-
       const resourceIndex = this.resources.findIndex(
         (r) => String(r.id) === String(resourceId),
       );
@@ -465,7 +504,6 @@ export default class EventResource {
       );
       const currentEvents =
         this.eventsMap.get(`${resourceId}::${columnId}`) || [];
-
       this.onCellClick({
         date: this.currentDate,
         view: this.currentView,
@@ -479,12 +517,12 @@ export default class EventResource {
 
   /**
    * Draws the baseline grid architecture, mapping axes and binding global delegation listeners via fragment batching.
+   * Includes dynamic sizing adjustment for column widths.
    * @private
    * @returns {void}
    */
   _renderSkeleton = () => {
     this.container.innerHTML = "";
-
     const fragment = document.createDocumentFragment();
     const wrapper = document.createElement("div");
     wrapper.className = "er-container";
@@ -495,17 +533,17 @@ export default class EventResource {
 
     const gridWrapper = document.createElement("div");
     gridWrapper.className = "er-grid-wrapper";
-
     const grid = document.createElement("div");
     grid.className = `er-grid ${this.stickyHeaders ? "er-sticky" : ""}`.trim();
-    grid.style.gridTemplateColumns = `150px repeat(${this.columns.length || 1}, minmax(120px, auto))`;
+
+    // Dynamic width layout based on inner cell requirements
+    grid.style.gridTemplateColumns = `150px repeat(${this.columns.length || 1}, auto)`;
 
     // Event Delegation attached directly to the grid root
     grid.addEventListener("click", this._handleGridClick);
 
     // Use DocumentFragment for grid cells to batch DOM insertions
     const gridFragment = document.createDocumentFragment();
-
     const corner = document.createElement("div");
     corner.className = "er-header-cell er-corner";
     gridFragment.appendChild(corner);
@@ -597,7 +635,6 @@ export default class EventResource {
       } else {
         eventDiv.textContent = ev.title;
       }
-
       cell.appendChild(eventDiv);
     });
   };

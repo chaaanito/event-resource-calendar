@@ -4,6 +4,13 @@
  * @property {string|number} id - REQUIRED: Unique identifier for the resource row.
  * @property {string} name - REQUIRED: Fallback display title of the resource.
  * @property {*} [key: string] - OPTIONAL: Any additional open-ended properties (e.g., capacity, role).
+ * @example
+ * const developer = {
+ *   id: 'res-1',
+ *   name: 'John Doe',
+ *   role: 'Frontend Engineer',
+ *   capacity: 40
+ * };
  */
 
 /**
@@ -12,6 +19,12 @@
  * @property {string|number} id - REQUIRED: Unique identifier for the column.
  * @property {string} label - REQUIRED: Fallback column display text.
  * @property {*} [key: string] - OPTIONAL: Any additional extensible properties (e.g., time, location).
+ * @example
+ * const morningShift = {
+ *   id: 'col-1',
+ *   label: 'Morning Shift (8 AM - 12 PM)',
+ *   type: 'shift'
+ * };
  */
 
 /**
@@ -23,6 +36,15 @@
  * @property {string} title - REQUIRED: Plain-text title injected inside the DOM node element card.
  * @property {string} [color='#3b82f6'] - OPTIONAL: Valid CSS color value (hex, rgb, etc.).
  * @property {*} [key: string] - OPTIONAL: Custom meta data attributes parsed down to click payloads.
+ * @example
+ * const meeting = {
+ *   id: 'evt-100',
+ *   resourceId: 'res-1',
+ *   columnId: 'col-1',
+ *   title: 'Team Standup',
+ *   color: '#10b981',
+ *   meetingLink: 'https://zoom.us/j/123456'
+ * };
  */
 
 /**
@@ -31,6 +53,12 @@
  * @property {string|Date|number} date - REQUIRED: Parsable temporal timestamp mapping the milestone.
  * @property {string} name - REQUIRED: The human-readable label injected into global notice badges.
  * @property {*} [key: string] - OPTIONAL: Open-ended customer specific holiday data.
+ * @example
+ * const newYears = {
+ *   date: '2024-01-01',
+ *   name: 'New Year\'s Day',
+ *   isPaidTimeOff: true
+ * };
  */
 
 /**
@@ -39,6 +67,12 @@
  * @property {string} label - REQUIRED: Text descriptor rendered inside the button element.
  * @property {function(MouseEvent): void} onClick - REQUIRED: Action handler fired upon click.
  * @property {string} [className] - OPTIONAL: CSS style modifiers for the button.
+ * @example
+ * const exportBtn = {
+ *   label: 'Export PDF',
+ *   onClick: (e) => console.log('Exporting...', e),
+ *   className: 'my-custom-export-class'
+ * };
  */
 
 /**
@@ -89,5 +123,13 @@
  * @property {function(Date, string): Promise<GridResource[]>} [fetchResources] - OPTIONAL: Async method returning resources dynamically.
  * @property {function(Date, string): Promise<GridColumn[]>} [fetchColumns] - OPTIONAL: Async method returning columns dynamically.
  * @property {function(Date, string): Promise<GridHoliday[]>} [fetchHolidays] - OPTIONAL: Async method returning holidays dynamically.
+ * @example
+ * const options = {
+ *   container: '#my-grid',
+ *   resources: [{ id: 'r1', name: 'Room A' }],
+ *   columns: [{ id: 'c1', label: '9:00 AM' }],
+ *   showControls: true,
+ *   onEventClick: (payload) => alert(`Clicked ${payload.event.title}`)
+ * };
  */
 export {};
